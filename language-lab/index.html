@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Content Language Lab</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#17191f;--muted:#686f7d;--line:#e5e8ef;--accent:#1f5eff;--accent2:#0b3bb6;--good:#087a3e;--bad:#b3261e;--soft:#eef3ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR","Noto Sans JP",sans-serif;color:var(--ink)}
+.shell{max-width:980px;margin:0 auto;padding:24px 18px 80px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{font-weight:800;font-size:22px}.sub{color:var(--muted);font-size:13px}
+.breadcrumb{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:8px 0 18px}
+.crumb{border:0;background:transparent;padding:4px 0;color:var(--accent);font-size:14px;cursor:pointer}.sep{color:#9aa1ad}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 26px rgba(25,35,60,.05)}
+.hero{padding:30px}.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;color:var(--muted);line-height:1.7}
+.foldergrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+.folder{border:1px solid var(--line);background:#fff;border-radius:16px;padding:20px;text-align:left;cursor:pointer;transition:.15s}
+.folder:hover{transform:translateY(-2px);border-color:#b7c6ff;box-shadow:0 8px 18px rgba(31,94,255,.08)}
+.folder .icon{font-size:26px}.folder .name{font-size:19px;font-weight:750;margin-top:9px}.folder .hint{font-size:13px;color:var(--muted);margin-top:5px}
+.leafhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-start}
+.leafhead h1{margin:0;font-size:26px}.leafmeta{color:var(--muted);font-size:13px;margin-top:6px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}.btn{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:11px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent2)}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.pill{background:#f3f5f8;border-radius:999px;padding:8px 12px;font-size:13px;color:#4b5260}
+.progressbar{height:8px;background:#eceff4;border-radius:999px;overflow:hidden;margin:12px 0 20px}.progressbar>div{height:100%;background:var(--accent);width:0}
+.qnum{font-size:13px;color:var(--muted);font-weight:700}.qstem{font-size:22px;font-weight:750;line-height:1.5;margin:9px 0 16px}
+.options{display:grid;gap:10px}.opt{width:100%;text-align:left;border:1px solid var(--line);background:#fff;padding:14px 15px;border-radius:13px;font-size:16px;cursor:pointer}
+.opt:hover{border-color:#b8c5e8}.opt.selected{border-color:var(--accent);background:var(--soft)}.opt.correct{border-color:#66b68b;background:#ecfaf2}.opt.wrong{border-color:#e2a7a2;background:#fff1f0}
+.feedback{margin-top:14px;padding:14px;border-radius:13px;background:#f7f8fa;line-height:1.7;display:none}.feedback.good{border-left:4px solid var(--good)}.feedback.bad{border-left:4px solid var(--bad)}
+.explain{margin-top:10px;padding:15px;border:1px solid var(--line);border-radius:13px;background:#fff;display:none;line-height:1.7}
+.qactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.qactions .btn:disabled{opacity:.45;cursor:not-allowed}
+.scriptbox{white-space:pre-wrap;line-height:1.8;font-size:15px;max-height:65vh;overflow:auto;background:#fbfbfd;border:1px solid var(--line);padding:18px;border-radius:14px}
+.note{font-size:13px;color:var(--muted);line-height:1.6;margin-top:12px}
+.empty{padding:32px;text-align:center;color:var(--muted)}
+@media(max-width:620px){.shell{padding:16px 12px 60px}.hero{padding:22px}.hero h1{font-size:25px}.qstem{font-size:19px}.card{padding:16px}.foldergrid{grid-template-columns:1fr}}
+
+ruby{ruby-position:under;display:inline-ruby;margin:0 .5px;line-height:1.95}
+ruby rt{font-size:10px;line-height:1.1;color:var(--muted);text-align:center}
+.topbar{flex-wrap:wrap}.topbar .btn{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div><div class="brand">Content Language Lab</div><div class="sub">미드·Podcast 원문 기반 동적 문제 생성</div></div>
+    <div class="actions"><button class="btn" id="addBtn">＋ 콘텐츠 추가</button><button class="btn" id="backupBtn">백업</button><button class="btn" id="homeBtn">홈</button></div>
+  </div>
+  <div id="breadcrumb" class="breadcrumb"></div>
+  <main id="app"></main>
+</div>
+
+<script>
+let TREE = {"english": {"label": "English", "children": {"drama": {"label": "Drama", "children": {"office": {"label": "The Office", "children": {"s1": {"label": "Season 1", "children": {"e1": {"label": "Episode 1", "leaf": {"key": "en-office-s01e01", "title": "The Office · Season 1 · Episode 1", "language": "en", "script": "The Office — Season 1, Episode 1\n\n학습 범위: 사용자가 제공한 S01E01 스크립트를 기반으로 핵심 회화 표현과 문맥을 출제합니다.\n\nKey lines include: How are things going? / Couldn't close it. / keep a lid on this / Something just came up / take it up with HR / out of your hands / get the axe / take advantage / screw around / follow my lead / in on it / severance pay / gross misconduct / clean out your desk / We gotta get going.", "points": [{"id": "close", "phrase": "close a deal", "meaning": "finalize or successfully complete a business deal", "ko": "거래를 성사시키다", "contexts": ["The client agreed to the price, but we still need to ___ the deal.", "She has three days left to ___ the sale.", "The salesperson couldn't ___ it before the deadline."]}, {"id": "guidance", "phrase": "guidance", "meaning": "advice or direction that helps someone decide what to do", "ko": "조언, 지도", "contexts": ["I asked my manager for ___ before calling the client.", "New employees often need ___ during their first week.", "He came to a senior coworker for ___."]}, {"id": "lid", "phrase": "keep a lid on it", "meaning": "keep information secret or prevent it from spreading", "ko": "비밀로 하다, 새어나가지 않게 하다", "contexts": ["The merger is confidential, so please ___.", "Don't tell the team yet—___ until Friday.", "We don't want to worry people, so let's ___."]}, {"id": "downsizing", "phrase": "downsizing", "meaning": "reducing the size of a company, often by cutting jobs", "ko": "인력 감축, 조직 축소", "contexts": ["The company announced ___ after a difficult year.", "Employees were worried about possible ___.", "The branch may face ___ next quarter."]}, {"id": "cameup", "phrase": "something came up", "meaning": "an unexpected situation happened", "ko": "갑자기 일이 생기다", "contexts": ["I have to cancel dinner because ___.", "Can I call you back? ___.", "Sorry I'm late—___."]}, {"id": "hands", "phrase": "out of my hands", "meaning": "no longer under my control", "ko": "내 통제 밖이다", "contexts": ["The final decision is ___.", "I sent the request, but now it's ___.", "Once legal approves it, the matter is ___."]}, {"id": "axe", "phrase": "get the axe", "meaning": "be fired, cut, or eliminated", "ko": "잘리다, 폐지되다", "contexts": ["The branch may ___ if sales keep falling.", "Several projects could ___ this year.", "He was afraid his team would ___."]}, {"id": "hr", "phrase": "take it up with HR", "meaning": "raise or discuss the issue with the human-resources department", "ko": "그 문제를 HR과 상의하다", "contexts": ["If your salary is wrong, ___.", "For a benefits complaint, you should ___.", "If you disagree with the policy, ___."]}, {"id": "advantage", "phrase": "take advantage of", "meaning": "use a situation or person for benefit", "ko": "이용하다, 활용하다", "contexts": ["Some workers ___ a relaxed office culture.", "Don't ___ his kindness.", "We should ___ the extra time before launch."]}, {"id": "screw", "phrase": "screw around", "meaning": "waste time or fool around instead of working", "ko": "빈둥거리다, 장난치다", "contexts": ["Stop ___ and finish the report.", "They were ___ instead of working.", "You can't ___ during an emergency drill."]}, {"id": "reprimand", "phrase": "reprimand", "meaning": "formally criticize someone for wrongdoing", "ko": "공식적으로 질책하다", "contexts": ["The manager had to ___ the employee.", "HR may ___ staff who ignore the rule.", "The supervisor decided to ___ him in writing."]}, {"id": "effects", "phrase": "personal effects", "meaning": "a person's personal belongings", "ko": "개인 소지품", "contexts": ["Please remove your ___ from the desk.", "Security returned her ___.", "He packed his ___ before leaving the office."]}, {"id": "lead", "phrase": "follow my lead", "meaning": "do what I do or follow my example", "ko": "내가 하는 대로 따라 하다", "contexts": ["Don't improvise—just ___.", "When we enter the room, ___.", "I'll speak first; ___."]}, {"id": "inon", "phrase": "be in on it", "meaning": "know about and participate in a secret plan or joke", "ko": "비밀 계획에 가담하다", "contexts": ["Ryan knew about the prank because he was ___.", "Was she ___ from the beginning?", "Only three people were ___."]}, {"id": "gross", "phrase": "gross misconduct", "meaning": "very serious workplace wrongdoing", "ko": "중대한 비위 행위", "contexts": ["The theft was treated as ___.", "Violence at work can count as ___.", "The company dismissed him for ___."]}, {"id": "severance", "phrase": "severance pay", "meaning": "money paid to an employee when employment ends", "ko": "퇴직·해고 보상금", "contexts": ["The contract includes six weeks of ___.", "She asked HR about her ___.", "Employees may receive ___ after termination."]}, {"id": "clean", "phrase": "clean out your desk", "meaning": "remove your belongings from your workspace, often before leaving a job", "ko": "책상에서 개인 물건을 모두 치우다", "contexts": ["He was told to ___ before noon.", "After the termination meeting, she had to ___.", "The boss said, 'Please ___.'"]}, {"id": "gotta", "phrase": "We gotta get going", "meaning": "we have to leave now", "ko": "우리 이제 가야 해", "contexts": ["It's getting late—___.", "The train leaves in ten minutes; ___.", "Thanks for dinner, but ___."]}], "facts": [{"q": "Why does Jan want Michael to keep the information quiet?", "a": "She does not want to worry people unnecessarily.", "d": ["She wants to surprise the office with a party.", "She has forgotten the details.", "She wants everyone to resign immediately."], "ko": "Jan은 불필요하게 직원들을 걱정시키고 싶지 않아 비밀로 해 달라고 합니다."}, {"q": "What does Jim say happened with the library sale?", "a": "He couldn't close it.", "d": ["He never contacted the library.", "He already received payment.", "He gave the account to Dwight."], "ko": "Jim은 도서관 건을 성사시키지 못했다고 말합니다."}, {"q": "What does Pam say Michael did with the fax?", "a": "He put it in the garbage can he had jokingly called a filing cabinet.", "d": ["He sent it back to corporate.", "He gave it to Jim.", "He locked it in his desk."], "ko": "Pam은 Michael이 팩스를 농담으로 '특별한 파일 캐비닛'이라 부른 쓰레기통에 버렸다고 지적합니다."}, {"q": "What major workplace issue does Jan discuss with Michael?", "a": "Possible branch downsizing.", "d": ["A new dress code.", "A move to a new building.", "A company picnic."], "ko": "Jan은 지점 통폐합과 인원 감축 가능성을 이야기합니다."}, {"q": "Why does Dwight complain about Jim?", "a": "Jim puts Dwight's personal items in Jell-O as a prank.", "d": ["Jim steals Dwight's car.", "Jim refuses to answer customer calls.", "Jim moves Dwight to another branch."], "ko": "Jim이 Dwight의 물건을 젤로 속에 넣는 장난을 반복하기 때문입니다."}, {"q": "What does Michael pretend Pam stole?", "a": "Post-It notes.", "d": ["A printer.", "A company car.", "A laptop."], "ko": "Michael은 장난으로 Pam이 Post-It notes를 훔쳤다고 말합니다."}]}}}}}}}}}}, "japanese": {"label": "日本語", "children": {"podcast": {"label": "Podcast", "children": {"fermented": {"label": "Fermented Beans", "leaf": {"key": "jp-podcast-fermented-beans", "title": "Fermented Beans", "language": "ja", "script": "皆さんは毎日どんな食べ物を食べていますか。\n私は最近日本の食べ物を食べています。\nオークランドにはアジアのスーパーやレストランがたくさんあるので、簡単に買うことができます。\nとても便利ですよね。\n私は最近日本の緑茶と納豆とラーメンが恋しいです。\nよくアジアのスーパーに行って買います。\n\n緑茶は日本のスーパーで70円ぐらいです。米ドルでは70セントですね。とても安いです。\nでもオークランドでは300円ぐらいです。4倍ぐらい高いですね。\n納豆も日本では70円くらいで買うことができますが、オークランドでは400円ぐらいです。\nでも恋しいのでよく買いますね。\n\nところで皆さんは納豆を聞いたことがありますか。食べたことがありますか。\n納豆は発酵食品です。チーズみたいな食べ物です。\nでも見た目は少し気持ち悪いですよね。とてもネバネバしています。\n\n私はよく納豆をご飯の上にかけて食べます。\n納豆にネギを入れるともっと美味しいですね。\n私は納豆が大好きですが、私の彼女は納豆が大嫌いです。\n彼女は納豆は臭すぎると言っていました。\n私のほとんどの外国人の友達も納豆が大嫌いです。\nでも納豆はとてもヘルシーなんですよ。\n\n日本人はよく納豆を朝ごはんに食べます。\n私は朝ごはんも晩ごはんも食べます。\n納豆の中に生卵も入れる人もいますよ。\n私の祖父はよく生卵と一緒に納豆を食べます。\n日本では生卵を食べるんですよ。\n私も生卵に醤油を入れてご飯と一緒に食べるのが大好きです。\n納豆と卵とネギを入れたら、本当に最高ですね。\n\nどうですか。気持ち悪いですか。\n日本は変な食べ物がたくさんありますよね。\n納豆はいろいろな種類があります。\n豆がとても大きいのや、とても小さいのがあります。\nタレの味も違います。\n\n皆さんの国で納豆を買うことができますか。\n納豆を買えたら、ぜひ食べてみてください。\n日本には変な食べ物がたくさんありますよ。\nまた他のエピソードで日本の変な食べ物について話しますね。", "points": [{"id": "koishii", "term": "恋しい", "reading": "こいしい", "ko": "그립다", "contexts": ["海外にいると、日本の食べ物が___なります。", "家族に会えないと、とても___です。", "昔住んでいた町が___です。"]}, {"id": "hakkou", "term": "発酵食品", "reading": "はっこうしょくひん", "ko": "발효식품", "contexts": ["納豆やヨーグルトは___です。", "菌の働きで作られる食べ物を___と言います。", "この店は日本の___をたくさん売っています。"]}, {"id": "nebane", "term": "ネバネバ", "reading": "ねばねば", "ko": "끈적끈적", "contexts": ["納豆はとても___しています。", "このオクラは少し___しています。", "箸で持つと糸を引くくらい___しています。"]}, {"id": "kakeru", "term": "かける", "reading": "かける", "ko": "뿌리다, 끼얹다", "contexts": ["醤油をご飯の上に___。", "ソースをサラダに___。", "納豆をご飯に___食べます。"]}, {"id": "kusai", "term": "臭い", "reading": "くさい", "ko": "냄새가 나다, 냄새가 고약하다", "contexts": ["この魚は少し___です。", "彼女は納豆が___と言いました。", "ゴミ箱から変なにおいがして___です。"]}, {"id": "sugiru", "term": "〜すぎる", "reading": "〜すぎる", "ko": "너무 ~하다", "contexts": ["このコーヒーは熱___。", "このかばんは高___ので買いません。", "納豆は臭___と感じる人もいます。"]}, {"id": "hotondo", "term": "ほとんど", "reading": "ほとんど", "ko": "대부분, 거의", "contexts": ["私の友達の___は納豆を食べません。", "宿題は___終わりました。", "このクラスの___の人が参加します。"]}, {"id": "namatamago", "term": "生卵", "reading": "なまたまご", "ko": "날달걀", "contexts": ["日本では___をご飯と食べる人もいます。", "祖父は納豆に___を入れます。", "これは火を通していない___です。"]}, {"id": "shouyu", "term": "醤油", "reading": "しょうゆ", "ko": "간장", "contexts": ["刺身に___をつけて食べます。", "卵に___を入れます。", "日本料理では___をよく使います。"]}, {"id": "saikou", "term": "最高", "reading": "さいこう", "ko": "최고", "contexts": ["納豆と卵とネギは本当に___です。", "今日の景色は___でした。", "この映画、___！"]}, {"id": "shurui", "term": "種類", "reading": "しゅるい", "ko": "종류", "contexts": ["納豆にはいろいろな___があります。", "この店はパンの___が多いです。", "同じ商品でも___が違います。"]}, {"id": "tarek", "term": "タレ", "reading": "たれ", "ko": "소스, 양념장", "contexts": ["納豆についている___を入れます。", "焼き鳥に甘い___をかけます。", "この___は少し辛いです。"]}, {"id": "takoto", "term": "〜たことがある", "reading": "〜たことがある", "ko": "~해 본 적이 있다", "contexts": ["納豆を食べ___？", "日本へ行っ___。", "この映画を見___？"]}, {"id": "temiru", "term": "〜てみる", "reading": "〜てみる", "ko": "시험 삼아 ~해 보다", "contexts": ["おいしそうなので食べ___。", "この服を着___ください。", "納豆を買えたら食べ___ください。"]}, {"id": "tara", "term": "〜たら", "reading": "〜たら", "ko": "~하면, ~라면", "contexts": ["納豆を買え___、食べてみてください。", "時間があっ___、電話してください。", "日本に行っ___、寿司を食べたいです。"]}, {"id": "mitame", "term": "見た目", "reading": "みため", "ko": "겉모습, 외관", "contexts": ["___は少し変ですが、おいしいです。", "料理は___も大切です。", "このケーキは___がきれいです。"]}], "facts": [{"q": "オークランドで日本の食べ物を買いやすいのはなぜですか。", "a": "アジアのスーパーやレストランがたくさんあるからです。", "d": ["日本より全部安いからです。", "毎日無料でもらえるからです。", "日本人しか住んでいないからです。"], "ko": "오클랜드에는 아시아 슈퍼와 레스토랑이 많아서 일본 음식을 쉽게 살 수 있습니다."}, {"q": "話し手が最近恋しい日本のものはどれですか。", "a": "緑茶・納豆・ラーメン", "d": ["寿司・天ぷら・うどん", "カレー・そば・牛乳", "パン・チーズ・コーヒー"], "ko": "화자는 최근 일본의 녹차, 낫토, 라멘이 그립다고 말합니다."}, {"q": "オークランドの緑茶は日本よりだいたいどのくらい高いですか。", "a": "4倍ぐらい", "d": ["2倍ぐらい", "10倍ぐらい", "同じくらい"], "ko": "일본에서는 약 70엔, 오클랜드에서는 약 300엔이라 대략 4배 비싸다고 합니다."}, {"q": "高くても話し手が納豆をよく買うのはなぜですか。", "a": "納豆が恋しいからです。", "d": ["彼女が毎日食べるからです。", "無料だからです。", "料理に必ず必要だからです。"], "ko": "낫토가 그립기 때문에 비싸도 자주 산다고 합니다."}, {"q": "話し手の彼女は、なぜ納豆が嫌いですか。", "a": "臭すぎると感じるからです。", "d": ["甘すぎるからです。", "高すぎるからです。", "辛すぎるからです。"], "ko": "여자친구는 낫토가 너무 냄새난다고 말합니다."}, {"q": "日本人は納豆をよくいつ食べますか。", "a": "朝ごはん", "d": ["夜食だけ", "おやつだけ", "昼ごはんだけ"], "ko": "일본인은 낫토를 아침식사로 자주 먹는다고 설명합니다."}, {"q": "話し手の祖父は納豆を何と一緒に食べますか。", "a": "生卵", "d": ["チーズ", "ラーメン", "緑茶"], "ko": "화자의 할아버지는 낫토를 생달걀과 함께 먹습니다."}, {"q": "話し手が「最高」と言う組み合わせはどれですか。", "a": "納豆・卵・ネギ", "d": ["納豆・チーズ・砂糖", "納豆・ラーメン・緑茶", "納豆・パン・牛乳"], "ko": "낫토, 달걀, 파의 조합을 정말 최고라고 말합니다."}, {"q": "納豆にはどんな違いがありますか。", "a": "豆の大きさやタレの味など、いろいろな種類があります。", "d": ["全部同じ大きさと味です。", "色だけが違います。", "値段だけが違います。"], "ko": "콩 크기와 타레 맛 등이 다른 여러 종류의 낫토가 있다고 설명합니다."}]}}}}}}};
+const app = document.getElementById('app');
+const breadcrumb = document.getElementById('breadcrumb');
+const homeBtn = document.getElementById('homeBtn');
+
+
+const STORE='cll-personal-episodes-v1';
+let extras=(()=>{try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch{return []}})();
+TREE.english.children.podcast={label:'Podcast',children:{a1:{label:'A1',children:{}},a2:{label:'A2',children:{}},b1:{label:'B1',children:{}},b2:{label:'B2',children:{}}}};
+function mountExtra(entry){let n={children:TREE};for(let i=0;i<entry.keys.length;i++){const k=entry.keys[i];n.children??={};n.children[k]??={label:entry.labels[i],children:{}};n=n.children[k]}n.leaf=entry.leaf}
+extras.forEach(entry=>{try{mountExtra(entry)}catch(e){console.warn(e)}});
+const readings={'納豆':'なっとう','発酵食品':'はっこうしょくひん','緑茶':'りょくちゃ','見た目':'みため','恋しい':'こいしい','臭い':'くさい','臭すぎる':'くさすぎる','生卵':'なまたまご','醤油':'しょうゆ','最高':'さいこう','種類':'しゅるい','祖父':'そふ','便利':'べんり','気持ち悪い':'きもちわるい','日本':'にほん','日本人':'にほんじん','皆さん':'みなさん','毎日':'まいにち','最近':'さいきん','食べ物':'たべもの','簡単':'かんたん','彼女':'かのじょ','外国人':'がいこくじん','大嫌い':'だいきらい','大好き':'だいすき','一緒に':'いっしょに','買えたら':'かえたら','食べてみてください':'たべてみてください','食べたこと':'たべたこと','朝ごはん':'あさごはん','晩ごはん':'ばんごはん','本当に':'ほんとうに','美味しい':'おいしい','小さい':'ちいさい','大きい':'おおきい','安い':'やすい','高い':'たかい','買います':'かいます','食べます':'たべます','食べる':'たべる','円':'えん','倍':'ばい','味':'あじ','違います':'ちがいます'};
+function formattedText(s,leaf){
+ if(leaf?.language!=='ja')return esc(s).replace(/\n/g,'<br>');
+ const map={...readings};for(const p of leaf.points||[]){if(p.reading&&p.term&&/[\u3400-\u9fff]/.test(p.term))map[p.term]=p.reading}
+ const keys=Object.keys(map).sort((a,b)=>b.length-a.length);let out='',i=0,t=String(s);
+ while(i<t.length){const k=keys.find(k=>t.startsWith(k,i));if(k){out+='<ruby>'+esc(k)+'<rt>'+esc(map[k])+'</rt></ruby>';i+=k.length}else{out+=esc(t[i]);i++}}
+ return out.replace(/\n/g,'<br>');
+}
+function editor(){
+ document.getElementById('breadcrumb').innerHTML='학습 시작 › 콘텐츠 추가';
+ app.innerHTML=`<section class="card"><h1>새 스크립트 추가</h1><p class="note">영어나 일본어의 미드·Podcast 자료를 추가하세요. 저장한 콘텐츠는 현재 브라우저에서만 유지됩니다.</p>
+ <form id="editform" style="display:grid;gap:12px">
+ <label>언어 <select class="btn" id="lng"><option value="ja">日本語</option><option value="en">English</option></select></label>
+ <label>유형 <select class="btn" id="typ"><option value="podcast">Podcast</option><option value="drama">Drama</option></select></label>
+ <label id="levwrap">영어 Podcast 레벨 <select class="btn" id="lev"><option>A1</option><option>A2</option><option>B1</option><option>B2</option></select></label>
+ <label id="serieswrap">미드 이름 <input id="ser" value="The Office" style="width:100%;padding:12px;border-radius:9px;border:1px solid #aaa"></label>
+ <label id="seasonwrap">시즌 <input id="season" type="number" min="1" value="1" style="width:100%;padding:12px;border-radius:9px;border:1px solid #aaa"></label>
+ <label>에피소드 제목 <input id="ttl" required style="width:100%;padding:12px;border-radius:9px;border:1px solid #aaa" placeholder="Fermented Beans / Episode 2"></label>
+ <label>주제 스크립트 전문 <textarea id="src" rows="7" required style="width:100%;padding:12px;border-radius:9px;border:1px solid #aaa"></textarea></label>
+ <label>핵심 단어 및 표현 (표현 | 한국어 뜻 | 히라가나) <textarea id="words" rows="6" required placeholder="納豆 | 낫토 | なっとう&#10;発酵食品 | 발효식품 | はっこうしょくひん&#10;最高 | 최고 | さいこう&#10;生卵 | 날달걀 | なまたまご" style="width:100%;padding:12px;border-radius:9px;border:1px solid #aaa"></textarea></label>
+ <button class="btn primary" type="submit">새 콘텐츠 저장</button>
+ </form><div class="actions" style="margin-top:10px"><button class="btn" id="editorHome">홈으로</button></div>
+ <p class="note">무료 로컬 문제 생성 방식입니다. 내용 업로드만으로 AI가 자동 분석하는 것은 아니며, 핵심 표현을 4개 이상 입력해야 합니다.</p></section>`;
+ document.getElementById('editorHome').onclick=()=>{path=[];activeLeaf=null;render()};
+ const lng=document.getElementById('lng'),typ=document.getElementById('typ');
+ const toggle=()=>{if(lng.value==='ja')typ.value='podcast';document.getElementById('levwrap').style.display=lng.value==='en'&&typ.value==='podcast'?'block':'none';document.getElementById('serieswrap').style.display=typ.value==='drama'?'block':'none';document.getElementById('seasonwrap').style.display=typ.value==='drama'?'block':'none'};
+ lng.onchange=toggle;typ.onchange=toggle;toggle();
+ document.getElementById('editform').onsubmit=ev=>{
+ ev.preventDefault();const title=document.getElementById('ttl').value.trim(),script=document.getElementById('src').value.trim();
+ const rows=document.getElementById('words').value.trim().split(/\r?\n/).map(s=>s.split('|').map(t=>t.trim())).filter(x=>x[0]&&x[1]);
+ if(rows.length<4){alert('서로 다른 핵심 표현을 4개 이상 입력해 주세요.');return}
+ const id='added-'+Date.now(),pts=rows.map(([term,ko,reading],i)=>({id:id+'-'+i,term,phrase:term,reading,ko,contexts:script.split(/[\n。.!?]/).filter(s=>s.includes(term)).slice(0,4).map(s=>s.replace(term,'___'))}));
+ const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'drama';
+ let keys,labels;
+ if(lng.value==='ja'){keys=['japanese','podcast',id];labels=['日本語','Podcast',title]}
+ else if(typ.value==='podcast'){const level=document.getElementById('lev').value;keys=['english','podcast',level.toLowerCase(),id];labels=['English','Podcast',level,title]}
+ else {const ser=document.getElementById('ser').value.trim()||'Drama',season=document.getElementById('season').value||'1';keys=['english','drama',slug(ser),'s'+season,id];labels=['English','Drama',ser,'Season '+season,title]}
+ const entry={keys,labels,leaf:{key:id,title,language:lng.value,script,points:pts,facts:[]}};extras.push(entry);localStorage.setItem(STORE,JSON.stringify(extras));mountExtra(entry);path=keys;activeLeaf=entry.leaf;newSet();
+ };
+}
+function dataBackup(){
+ document.getElementById('breadcrumb').innerHTML='학습 시작 › 백업';
+ app.innerHTML=`<section class="card"><h1>데이터 백업</h1><p>추가한 콘텐츠와 학습 이력을 JSON으로 보관하세요. 다른 기기로 자동 동기화되지는 않습니다.</p><div class="actions"><button class="btn primary" id="down">JSON 저장</button><input type="file" id="up" accept=".json"></div><button class="btn" id="returnHome">홈</button></section>`;
+ document.getElementById('returnHome').onclick=()=>{path=[];activeLeaf=null;render()};
+ document.getElementById('down').onclick=()=>{const records={version:1,extras,keys:Object.keys(localStorage).filter(k=>k.startsWith('recent:')||k.startsWith('stats:')).map(k=>[k,localStorage.getItem(k)])};const u=URL.createObjectURL(new Blob([JSON.stringify(records,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='language-lab-backup.json';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(u)};
+ document.getElementById('up').onchange=async(e)=>{try{const f=e.target.files[0];if(!f)return;const d=JSON.parse(await f.text());if(d.version!==1||!Array.isArray(d.extras))throw Error('잘못된 파일');if(!confirm('현재 개인 콘텐츠를 백업으로 교체할까요?'))return;localStorage.setItem(STORE,JSON.stringify(d.extras));for(const [k,v] of d.keys||[])if(k.startsWith('recent:')||k.startsWith('stats:'))localStorage.setItem(k,v);location.reload()}catch(ex){alert('복원 실패: '+ex.message)}};
+}
+document.getElementById('addBtn').onclick=editor;
+document.getElementById('backupBtn').onclick=dataBackup;
+
+let path = [];
+let activeLeaf = null;
+let session = [];
+let current = 0;
+let selected = null;
+let graded = false;
+
+function nodeAt(p){
+  let n={label:"학습 시작",children:TREE};
+  for(const key of p){ n=(n.children||{})[key]; }
+  return n;
+}
+function leafAt(p){ const n=nodeAt(p); return n.leaf||null; }
+function saveRecent(key,sig){
+  const k='recent:'+key; let a=JSON.parse(localStorage.getItem(k)||'[]');
+  a.unshift(sig); a=[...new Set(a)].slice(0,100); localStorage.setItem(k,JSON.stringify(a));
+}
+function recentSet(key){ return new Set(JSON.parse(localStorage.getItem('recent:'+key)||'[]')); }
+function saveAttempt(key,ok){
+  const k='stats:'+key; const s=JSON.parse(localStorage.getItem(k)||'{"attempts":0,"correct":0}');
+  s.attempts++; if(ok)s.correct++; localStorage.setItem(k,JSON.stringify(s)); return s;
+}
+function stats(key){ return JSON.parse(localStorage.getItem('stats:'+key)||'{"attempts":0,"correct":0}'); }
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function renderBreadcrumb(){
+  let items=[{label:'학습 시작',p:[]}]; let p=[];
+  for(const key of path){p.push(key);items.push({label:nodeAt(p).label,p:[...p]});}
+  breadcrumb.innerHTML=items.map((it,i)=>`<button class="crumb" data-p='${JSON.stringify(it.p)}'>${esc(it.label)}</button>${i<items.length-1?'<span class="sep">›</span>':''}`).join('');
+  breadcrumb.querySelectorAll('.crumb').forEach(b=>b.onclick=()=>{path=JSON.parse(b.dataset.p);activeLeaf=null;render();});
+}
+function render(){
+  renderBreadcrumb();
+  const n=nodeAt(path);
+  if(n.leaf){ activeLeaf=n.leaf; newSet(); return; }
+  const entries=Object.entries(n.children||{});
+  const title=path.length===0?'어떤 언어로 공부할까요?':n.label;
+  const desc=path.length===0?'언어를 선택하면 해당 콘텐츠 트리만 보입니다. 다른 언어의 문제는 섞이지 않습니다.':'아래 폴더 중 하나를 선택하세요.';
+  app.innerHTML=`<section class="card hero"><h1>${esc(title)}</h1><p>${esc(desc)}</p><div class="foldergrid">${entries.map(([k,v])=>`<button class="folder" data-k="${k}"><div class="icon">${path.length===0?(k==='english'?'🇺🇸':'🇯🇵'):'📁'}</div><div class="name">${esc(v.label)}</div><div class="hint">${v.leaf?'학습 콘텐츠':'열기'}</div></button>`).join('')}</div></section>`;
+  app.querySelectorAll('.folder').forEach(b=>b.onclick=()=>{path.push(b.dataset.k);render();});
+}
+
+function distractorsForPoint(leaf, point){
+  const other=leaf.points.filter(x=>x.id!==point.id);
+  if(leaf.language==='en') return shuffle(other).slice(0,3).map(x=>x.phrase);
+  return shuffle(other).slice(0,3).map(x=>x.term);
+}
+function buildPointQuestion(leaf,point,mode){
+  const ctx=pick(point.contexts);
+  if(leaf.language==='en'){
+    if(mode===0){
+      return {stem:`When you hear “${point.phrase}”, what does it most naturally mean?`,
+        answer:point.meaning, options:[point.meaning, ...shuffle(leaf.points.filter(x=>x.id!==point.id)).slice(0,3).map(x=>x.meaning)],
+        explain:`${point.phrase} = ${point.ko}. 실제 대사에서 단어 하나씩 직역하지 말고 하나의 의미 덩어리로 익히는 것이 좋습니다.`,
+        sig:`${point.id}|m|${point.meaning}`};
+    } else if(mode===1){
+      return {stem:ctx, answer:point.phrase, options:[point.phrase,...distractorsForPoint(leaf,point)],
+        explain:`정답은 “${point.phrase}”입니다. 뜻은 “${point.ko}”입니다. 원문 표현을 다른 상황에 적용한 문제입니다.`,
+        sig:`${point.id}|c|${ctx}`};
+    } else {
+      const leads=["Which expression best matches this meaning?","Choose the most natural expression for this situation.","Which phrase would a native speaker most likely use here?"];
+      return {stem:`${pick(leads)}\n“${point.ko}”`, answer:point.phrase, options:[point.phrase,...distractorsForPoint(leaf,point)],
+        explain:`${point.phrase}: ${point.ko}. 같은 학습 포인트라도 문항 형식과 보기를 바꿔 다시 출제합니다.`,
+        sig:`${point.id}|r|${pick(leads)}`};
+    }
+  }else{
+    if(mode===0){
+      return {stem:`「${point.term}」の意味に一番近いものはどれですか。`, answer:point.ko,
+        options:[point.ko,...shuffle(leaf.points.filter(x=>x.id!==point.id)).slice(0,3).map(x=>x.ko)],
+        explain:`${point.term}（${point.reading}） = ${point.ko}.`,
+        sig:`${point.id}|m|${point.term}`};
+    }else if(mode===1){
+      return {stem:ctx.replace(/___/g,'＿＿＿'), answer:point.term, options:[point.term,...distractorsForPoint(leaf,point)],
+        explain:`${point.term}（${point.reading}）를 넣으면 자연스럽습니다. 뜻: ${point.ko}.`,
+        sig:`${point.id}|c|${ctx}`};
+    }else{
+      const leads=["次の意味に合う日本語を選んでください。","この韓国語に一番近い日本語はどれですか。","会話で使える表現を選んでください。"];
+      return {stem:`${pick(leads)}\n「${point.ko}」`,answer:point.term,options:[point.term,...distractorsForPoint(leaf,point)],
+        explain:`${point.term}（${point.reading}） = ${point.ko}.`,
+        sig:`${point.id}|r|${point.ko}|${Math.floor(Math.random()*3)}`};
+    }
+  }
+}
+function buildFactQuestion(leaf,fact,variant){
+  const prefixes=leaf.language==='ja'?["内容を思い出して答えてください。","Podcastの内容として正しいものを選んでください。","本文の内容に合う答えはどれですか。"]:["Based on the episode context, choose the best answer.","Which answer matches the scene?","Check your understanding of the episode."];
+  return {stem:`${pick(prefixes)}\n${fact.q}`,answer:fact.a,options:[fact.a,...fact.d],
+    explain:fact.ko,sig:`fact|${fact.q}|${variant}`};
+}
+function makeCandidate(leaf){
+  const useFact=Math.random()<0.30 && leaf.facts.length;
+  if(useFact){const f=pick(leaf.facts);return buildFactQuestion(leaf,f,Math.floor(Math.random()*5));}
+  const p=pick(leaf.points); return buildPointQuestion(leaf,p,Math.floor(Math.random()*3));
+}
+function newSet(){
+  const leaf=activeLeaf||leafAt(path); activeLeaf=leaf;
+  const recent=recentSet(leaf.key); const made=[]; const sigs=new Set();
+  for(let i=0;i<10;i++){
+    let q=null;
+    for(let tries=0;tries<80;tries++){
+      const c=makeCandidate(leaf);
+      const optOrder=shuffle(c.options);
+      const sig=c.sig+'|'+optOrder.join('|');
+      if(!recent.has(sig)&&!sigs.has(sig)){q={...c,options:optOrder,signature:sig};break;}
+    }
+    if(!q){const c=makeCandidate(leaf);q={...c,options:shuffle(c.options),signature:c.sig+'|fallback|'+i+'|'+Date.now()};}
+    sigs.add(q.signature);saveRecent(leaf.key,q.signature);made.push(q);
+  }
+  session=made;current=0;selected=null;graded=false;renderLeaf();
+}
+function renderLeaf(){
+  const leaf=activeLeaf; const s=stats(leaf.key); const rate=s.attempts?Math.round(s.correct/s.attempts*100):0;
+  const q=session[current];
+  app.innerHTML=`<section class="card">
+    <div class="leafhead"><div><h1>${esc(leaf.title)}</h1><div class="leafmeta">${leaf.language==='ja'?'日本語':'English'} · 이 콘텐츠 안에서는 문제 번호가 항상 1부터 시작합니다.</div></div>
+      <div class="actions"><button class="btn" id="scriptBtn">전체 스크립트</button><button class="btn primary" id="newBtn">새 문제 세트</button></div></div>
+    <div class="stats"><span class="pill">이번 세트 10문제</span><span class="pill">누적 풀이 ${s.attempts}</span><span class="pill">정답률 ${rate}%</span></div>
+    <div class="progressbar"><div style="width:${(current+1)/session.length*100}%"></div></div>
+    <div class="qnum">${current+1} / ${session.length}</div>
+    <div class="qstem">${formattedText(q.stem,leaf)}</div>
+    <div class="options">${q.options.map((o,i)=>`<button class="opt" data-i="${i}"><b>${String.fromCharCode(65+i)}.</b> ${formattedText(o,leaf)}</button>`).join('')}</div>
+    <div id="feedback" class="feedback"></div><div id="explain" class="explain"></div>
+    <div class="qactions"><button class="btn" id="prevBtn" ${current===0?'disabled':''}>이전</button><button class="btn primary" id="checkBtn">정답 확인</button><button class="btn" id="explainBtn" disabled>해설 보기</button><button class="btn" id="nextBtn" ${current===session.length-1?'disabled':''}>다음</button></div>
+    <div class="note">새 문제 세트를 누르거나 이 콘텐츠에 다시 들어오면 학습 포인트·문장·보기·문제 유형을 다시 조합합니다. 최근 문제와 완전히 동일한 조합은 최대한 피합니다.</div>
+  </section>`;
+  document.getElementById('newBtn').onclick=newSet;
+  document.getElementById('scriptBtn').onclick=renderScript;
+  document.getElementById('prevBtn').onclick=()=>{current--;selected=null;graded=false;renderLeaf();};
+  document.getElementById('nextBtn').onclick=()=>{current++;selected=null;graded=false;renderLeaf();};
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(graded)return; selected=Number(b.dataset.i); document.querySelectorAll('.opt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');
+  });
+  document.getElementById('checkBtn').onclick=check;
+  document.getElementById('explainBtn').onclick=()=>{const e=document.getElementById('explain');e.style.display='block';e.innerHTML=`<b>해설</b><br>${formattedText(q.explain,leaf)}`;};
+}
+function check(){
+  if(selected===null){alert('보기를 먼저 선택하세요.');return;}
+  const q=session[current];graded=true;const buttons=[...document.querySelectorAll('.opt')]; const chosen=q.options[selected]; const ok=chosen===q.answer;
+  buttons.forEach((b,i)=>{if(q.options[i]===q.answer)b.classList.add('correct');else if(i===selected)b.classList.add('wrong');});
+  const f=document.getElementById('feedback');f.style.display='block';f.classList.add(ok?'good':'bad');f.innerHTML=ok?'<b>정답입니다.</b>':'<b>오답입니다.</b>';
+  document.getElementById('explainBtn').disabled=false;saveAttempt(activeLeaf.key,ok);
+}
+function renderScript(){
+  const leaf=activeLeaf;
+  app.innerHTML=`<section class="card"><div class="leafhead"><div><h1>${esc(leaf.title)} · 전체 스크립트</h1><div class="leafmeta">문제는 주제 내용과 학습 표현만 사용합니다.</div></div><button class="btn" id="backQuiz">문제로 돌아가기</button></div><div class="scriptbox" style="margin-top:16px">${formattedText(leaf.script,leaf)}</div></section>`;
+  document.getElementById('backQuiz').onclick=renderLeaf;
+}
+homeBtn.onclick=()=>{path=[];activeLeaf=null;render();};
+render();
+</script>
+</body></html>
